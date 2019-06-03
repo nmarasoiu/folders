@@ -17,7 +17,13 @@ final class Tree {
     }
 
     void addIfParentIsPresent(String folder) {
+        if("".equals(folder)){
+            return;
+        }
         int lastSlashIndex = folder.lastIndexOf("/");
+        if (lastSlashIndex < 0) {
+            throw new IllegalArgumentException("The paths should be absolute and thus start with /");
+        }
         String parentPath = folder.substring(0, lastSlashIndex);
         String childName = folder.substring(1 + lastSlashIndex);
         getOptionalTreeForPath(parentPath)
@@ -42,6 +48,9 @@ final class Tree {
     }
 
     private Optional<Tree> getOptionalTreeForPath(String path) {
+        if("".equals(path)){
+            return Optional.of(this);
+        }
         if (!path.contains("/")) {
             return getChildByName(path);
         } else {
