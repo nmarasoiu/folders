@@ -1,5 +1,7 @@
 import java.util.*;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 final class Tree {
     private final String name;
@@ -13,11 +15,15 @@ final class Tree {
     private Tree(String name, String path, List<Tree> children) {
         this.name = name;
         this.path = path;
-        this.children = children.stream().collect(Collectors.toMap(tree -> tree.name, tree -> tree));
+        this.children = children.stream().collect(Collectors.toMap/*ConcurrentMap*/(tree -> tree.name, tree -> tree));
+    }
+
+    Stream<String> toPaths() {
+        return children.values().stream().flatMap(child -> child.toPaths().map(descendentPath -> this.path + descendentPath));
     }
 
     void addIfParentIsPresent(String folder) {
-        if("".equals(folder)){
+        if ("".equals(folder)) {
             return;
         }
         int lastSlashIndex = folder.lastIndexOf("/");
@@ -30,17 +36,18 @@ final class Tree {
                 .ifPresent(parentTree -> parentTree.addChild(childName));
     }
 
-    void deleteChildrenWhichDontHaveWritableFolders(Set<String> writableFolders) {
+    void deleteChildrenWhichDontHaveWritableSubFolders(Set<String> writableFolders) {
         children
                 .entrySet()
                 .stream()
                 .filter(childTreeEntry -> {
                     Tree childTree = childTreeEntry.getValue();//todo concurrency, tests
-                    childTree.deleteChildrenWhichDontHaveWritableFolders(writableFolders);
+                    childTree.deleteChildrenWhichDontHaveWritableSubFolders(writableFolders);
                     return childTree.isLeaf() && !writableFolders.contains(childTree.path);
                 })
                 .map(Map.Entry::getKey)
-                .forEachOrdered(children::remove);
+                .collect(Collectors.toList())
+                .forEach(children::remove);
     }
 
     private boolean isLeaf() {
@@ -48,7 +55,7 @@ final class Tree {
     }
 
     private Optional<Tree> getOptionalTreeForPath(String path) {
-        if("".equals(path)){
+        if ("".equals(path)) {
             return Optional.of(this);
         }
         if (!path.contains("/")) {
