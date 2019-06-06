@@ -1,8 +1,10 @@
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 
-final class Tree {
+public final class Tree {
     private final String name;
     private final Map<String, Tree> children = new HashMap<>();
 
@@ -24,11 +26,7 @@ final class Tree {
         return root;
     }
 
-    Set<String> paths() {
-        return toPaths("/").collect(Collectors.toSet());
-    }
-
-    private Stream<String> toPaths(String parentPath) {
+    Stream<String> toPaths(String parentPath) {
         return children
                 .values()
                 .stream()
@@ -49,8 +47,8 @@ final class Tree {
     @Override
     public String toString() {
         return "Tree{" +
-                "name='" + name + '\'' +
-                ", children=" + children +
+                "name='" + getName() + '\'' +
+                ", children=" + getChildren() +
                 '}';
     }
 }
