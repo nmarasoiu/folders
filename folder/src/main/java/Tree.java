@@ -1,87 +1,57 @@
 import java.util.*;
-import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 final class Tree {
     private final String name;
-    private final String path;
-    private final Map<String, Tree> children;
+    private final Map<String, Tree> children = new HashMap<>();
 
-    Tree(String name, String path) {
-        this(name, path, Collections.emptyList());
-    }
-
-    private Tree(String name, String path, List<Tree> children) {
+    private Tree(String name) {
         this.name = name;
-        this.path = path;
-        this.children = children.stream().collect(Collectors.toMap/*ConcurrentMap*/(tree -> tree.name, tree -> tree));
     }
 
-    Stream<String> toPaths() {
-        return children.values().stream().flatMap(child -> child.toPaths().map(descendentPath -> this.path + descendentPath));
-    }
-
-    void addIfParentIsPresent(String folder) {
-        if ("".equals(folder)) {
-            return;
-        }
-        int lastSlashIndex = folder.lastIndexOf("/");
-        if (lastSlashIndex < 0) {
-            throw new IllegalArgumentException("The paths should be absolute and thus start with /");
-        }
-        String parentPath = folder.substring(0, lastSlashIndex);
-        String childName = folder.substring(1 + lastSlashIndex);
-        getOptionalTreeForPath(parentPath)
-                .ifPresent(parentTree -> parentTree.addChild(childName));
-    }
-
-    void deleteChildrenWhichDontHaveWritableSubFolders(Set<String> writableFolders) {
-        children
-                .entrySet()
+    static Tree from(Collection<String> folders) {
+        Tree root = new Tree("");
+        folders
                 .stream()
-                .filter(childTreeEntry -> {
-                    Tree childTree = childTreeEntry.getValue();//todo concurrency, tests
-                    childTree.deleteChildrenWhichDontHaveWritableSubFolders(writableFolders);
-                    return childTree.isLeaf() && !writableFolders.contains(childTree.path);
-                })
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList())
-                .forEach(children::remove);
+                .map(path -> path.substring(1))
+                .forEachOrdered(folder -> {
+                    Tree currentDir = root;
+                    for (String name : folder.split("/")) {
+                        currentDir = currentDir.children.computeIfAbsent(name, n -> new Tree(name));
+                    }
+                });
+        return root;
     }
 
-    private boolean isLeaf() {
-        return children.isEmpty();
+    Set<String> paths() {
+        return toPaths("/").collect(Collectors.toSet());
     }
 
-    private Optional<Tree> getOptionalTreeForPath(String path) {
-        if ("".equals(path)) {
-            return Optional.of(this);
-        }
-        if (!path.contains("/")) {
-            return getChildByName(path);
-        } else {
-            String[] firstFolderAndFollowingPath = path.split("/", 2);
-            String firstFolder = firstFolderAndFollowingPath[0];
-            String followingPath = firstFolderAndFollowingPath[1];
-            return getChildByName(firstFolder)
-                    .flatMap(tree -> tree.getOptionalTreeForPath(followingPath));
-        }
-
+    private Stream<String> toPaths(String parentPath) {
+        return children
+                .values()
+                .stream()
+                .flatMap(child -> {
+                    String childPath = "/".equals(parentPath) ? "/" + child.name : parentPath + "/" + child.name;
+                    return child.children.isEmpty() ? Stream.of(childPath) : child.toPaths(childPath);
+                });
     }
 
-    private void addChild(String childName) {
-        if (!hasChildByName(childName)) {
-            children.put(childName, new Tree(childName, path + "/" + childName));
-        }
+    public String getName() {
+        return name;
     }
 
-    private boolean hasChildByName(String childName) {
-        return getChildByName(childName).isPresent();
+    public Collection<Tree> getChildren() {
+        return Collections.unmodifiableCollection(children.values());
     }
 
-    private Optional<Tree> getChildByName(String childName) {
-        return Optional.ofNullable(children.get(childName));
+    @Override
+    public String toString() {
+        return "Tree{" +
+                "name='" + name + '\'' +
+                ", children=" + children +
+                '}';
     }
 }
 

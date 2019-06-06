@@ -1,19 +1,44 @@
-import java.util.*;
-import java.util.stream.Stream;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DefaultWritableFoldersComputer implements WritableFoldersComputer {
-    public Tree writableFolders(List<String> onlyReadableFolders, List<String> writableFolders) {
-        Set<String> writableFolderSet = new HashSet<>(writableFolders);
-        Tree tree = new Tree("", "/");
-        Stream.of(Collections.singleton("/"), onlyReadableFolders, writableFolderSet)
-                .flatMap(Collection::stream)
-                .map(String::trim)
-                .map(path -> path.endsWith("/") ? path.substring(0, path.length() - 1) : path)
-                .sorted()
-                .forEachOrdered(tree::addIfParentIsPresent);//todo concurrency? happens-before should be enough, no need for ConcurrentMap>?
-        //now tree contains only the accessible folders (going only thru read or write available parent folders)
-        //now we should delete nodes such that all leaves are writable folders
-        tree.deleteChildrenWhichDontHaveWritableSubFolders(writableFolderSet);
-        return tree;
+
+    @Override
+    public Tree accessibleAndWritableFolders(List<String> readableFolders, List<String> writableFolders) {
+        return Tree.from(reachableAndWritableFolders(clean(readableFolders), clean(writableFolders)));
     }
+
+    private List<String> reachableAndWritableFolders(Set<String> readableFolders, Set<String> writableFolders) {
+        return writableFolders
+                .stream()
+                .filter(writableFolder -> readableFolders.containsAll(ancestors(writableFolder)))
+                .collect(Collectors.toList());
+    }
+
+    private Set<String> ancestors(String dir) {
+        Set<String> ancestorSet = new HashSet<>();
+        StringBuilder ancestorBuilder = new StringBuilder(dir.length());
+        for (String name : dir.substring(1).split("/")) {
+            ancestorBuilder.append("/").append(name);
+            ancestorSet.add(ancestorBuilder.toString());
+        }
+        return ancestorSet;
+    }
+
+    private String parent(String folder) {
+        int lastIndexOfSlash = folder.lastIndexOf("/");
+        return lastIndexOfSlash <= 0 ? "/" : folder.substring(0, lastIndexOfSlash);
+    }
+
+    private Set<String> clean(List<String> readableFolders) {
+        return readableFolders
+                .stream()
+                .map(String::trim)
+                .map(str -> str.replaceAll("[/]+", "/"))
+                .map(str -> str.endsWith("/") ? str.substring(0, str.length() - 1) : str)
+                .collect(Collectors.toSet());
+    }
+
 }
