@@ -1,14 +1,19 @@
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.google.common.collect.Sets.newHashSet;
+import static com.google.common.collect.Sets.union;
+import static java.util.Collections.singleton;
 
 public class DefaultWritableFoldersComputer implements WritableFoldersComputer {
 
     @Override
     public Tree accessibleAndWritableFolders(List<String> readableFolders, List<String> writableFolders) {
-        return Tree.from(reachableAndWritableFolders(new HashSet<>(clean(readableFolders)), clean(writableFolders)));
+        Set<String> readableFolderSet = union(newHashSet(clean(readableFolders)), singleton("/"));
+        return Tree.from(reachableAndWritableFolders(readableFolderSet, clean(writableFolders)));
     }
 
     private List<String> reachableAndWritableFolders(Set<String> readableFolders, List<String> writableFolders) {
@@ -29,7 +34,7 @@ public class DefaultWritableFoldersComputer implements WritableFoldersComputer {
         return ancestorSet;
     }
 
-    private List<String> clean(List<String> readableFolders) {
+    private List<String> clean(Collection<String> readableFolders) {
         return readableFolders
                 .stream()
                 .map(String::trim)
