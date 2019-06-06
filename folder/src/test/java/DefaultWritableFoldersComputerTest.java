@@ -20,7 +20,9 @@ public class DefaultWritableFoldersComputerTest {
         List<String> writableFolders = asList("/a", "/b", "/b/c/d", "/b/f/e");
         List<String> readableFolders = concat(writableFolders, asList("/", "/b/c"));
         assertThat(
-                DEFAULT_WRITABLE_FOLDERS_COMPUTER.accessibleAndWritableFolders(readableFolders, writableFolders).toPaths("/").collect(Collectors.toSet()),
+                DEFAULT_WRITABLE_FOLDERS_COMPUTER
+                        .accessibleAndWritableFolders(readableFolders, writableFolders).toPaths("/")
+                        .collect(Collectors.toSet()),
                 equalTo(new HashSet<>(asList("/a", "/b/c/d")))
         );
     }

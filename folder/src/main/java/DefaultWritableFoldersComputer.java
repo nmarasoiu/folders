@@ -1,6 +1,5 @@
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class DefaultWritableFoldersComputer implements WritableFoldersComputer {
@@ -10,15 +9,16 @@ public class DefaultWritableFoldersComputer implements WritableFoldersComputer {
         return Tree.from(reachableAndWritableFolders(clean(readableFolders), clean(writableFolders)));
     }
 
-    private List<String> reachableAndWritableFolders(Set<String> readableFolders, Set<String> writableFolders) {
+    private List<String> reachableAndWritableFolders(List<String> readableFolders, List<String> writableFolders) {
         return writableFolders
                 .stream()
+                .distinct()
                 .filter(writableFolder -> readableFolders.containsAll(ancestors(writableFolder)))
                 .collect(Collectors.toList());
     }
 
-    private Set<String> ancestors(String dir) {
-        Set<String> ancestorSet = new HashSet<>();
+    private List<String> ancestors(String dir) {
+        List<String> ancestorSet = new ArrayList<>();
         StringBuilder ancestorBuilder = new StringBuilder(dir.length());
         for (String name : dir.substring(1).split("/")) {
             ancestorBuilder.append("/").append(name);
@@ -27,18 +27,13 @@ public class DefaultWritableFoldersComputer implements WritableFoldersComputer {
         return ancestorSet;
     }
 
-    private String parent(String folder) {
-        int lastIndexOfSlash = folder.lastIndexOf("/");
-        return lastIndexOfSlash <= 0 ? "/" : folder.substring(0, lastIndexOfSlash);
-    }
-
-    private Set<String> clean(List<String> readableFolders) {
+    private List<String> clean(List<String> readableFolders) {
         return readableFolders
                 .stream()
                 .map(String::trim)
                 .map(str -> str.replaceAll("[/]+", "/"))
                 .map(str -> str.endsWith("/") ? str.substring(0, str.length() - 1) : str)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
     }
 
 }
