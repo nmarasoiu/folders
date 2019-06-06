@@ -1,18 +1,20 @@
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class DefaultWritableFoldersComputer implements WritableFoldersComputer {
 
     @Override
     public Tree accessibleAndWritableFolders(List<String> readableFolders, List<String> writableFolders) {
-        return Tree.from(reachableAndWritableFolders(clean(readableFolders), clean(writableFolders)));
+        return Tree.from(reachableAndWritableFolders(new HashSet<>(clean(readableFolders)), clean(writableFolders)));
     }
 
-    private List<String> reachableAndWritableFolders(List<String> readableFolders, List<String> writableFolders) {
+    private List<String> reachableAndWritableFolders(Set<String> readableFolders, List<String> writableFolders) {
         return writableFolders
                 .stream()
-                .distinct()
+//                .distinct()
                 .filter(writableFolder -> readableFolders.containsAll(ancestors(writableFolder)))
                 .collect(Collectors.toList());
     }
