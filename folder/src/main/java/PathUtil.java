@@ -1,15 +1,14 @@
 import one.util.streamex.StreamEx;
 
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
-public final class PathTokenizationUtils {
+final class PathUtil {
     private static final Pattern slashPattern = Pattern.compile("/");
 
-    private PathTokenizationUtils() {
+    private PathUtil() {
     }
 
-    public static StreamEx<String> split(String path) {
+    static StreamEx<String> components(String path) {
         return StreamEx.of(
                 slashPattern
                         .splitAsStream(path)

@@ -14,7 +14,7 @@ public final class Tree {
     static Tree from(Stream<String> folders) {
         Tree root = new Tree("");
         folders.forEachOrdered(folder ->
-                PathTokenizationUtils.split(folder).foldLeft(root, (currentDir, name) ->
+                PathUtil.components(folder).foldLeft(root, (currentDir, name) ->
                         currentDir.children.computeIfAbsent(name, n -> new Tree(name))
                 ));
         return root;

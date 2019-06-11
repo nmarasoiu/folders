@@ -23,8 +23,8 @@ public class DefaultWritableFoldersComputer implements WritableFoldersComputer {
     }
 
     private Stream<String> ancestors(String dir) {
-        return PathTokenizationUtils
-                .split(dir)
+        return PathUtil
+                .components(dir)
                 .scanLeft("", (parent, name) -> parent + "/" + name)//it should return Stream but..todo replace with Rx or Reactor
                 .stream();
     }
