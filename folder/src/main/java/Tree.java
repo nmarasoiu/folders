@@ -12,10 +12,9 @@ public final class Tree {
         this.name = name;
     }
 
-    static Tree from(Collection<String> folders) {
+    static Tree from(Stream<String> folders) {
         Tree root = new Tree("");
         folders
-                .stream()
                 .map(path -> path.substring(1))
                 .forEachOrdered(folder -> {
                     Tree currentDir = root;

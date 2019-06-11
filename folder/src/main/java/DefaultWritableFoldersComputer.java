@@ -1,27 +1,23 @@
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.google.common.collect.Sets.newHashSet;
-import static com.google.common.collect.Sets.union;
-import static java.util.Collections.singleton;
 
 public class DefaultWritableFoldersComputer implements WritableFoldersComputer {
 
     @Override
     public Tree accessibleAndWritableFolders(List<String> readableFolders, List<String> writableFolders) {
-        Set<String> readableFolderSet = union(newHashSet(clean(readableFolders)), singleton("/"));
-        return Tree.from(reachableAndWritableFolders(readableFolderSet, clean(writableFolders)));
+        return Tree.from(reachableAndWritableFolders(newHashSet(clean(readableFolders)), clean(writableFolders)));
     }
 
-    private List<String> reachableAndWritableFolders(Set<String> readableFolders, List<String> writableFolders) {
+    private Stream<String> reachableAndWritableFolders(Set<String> readableFolders, List<String> writableFolders) {
         return writableFolders
                 .stream()
 //                .distinct()
-                .filter(writableFolder -> readableFolders.containsAll(ancestors(writableFolder)))
-                .collect(Collectors.toList());
+                .filter(writableFolder -> readableFolders.containsAll(ancestors(writableFolder)));
     }
 
     private List<String> ancestors(String dir) {
@@ -34,7 +30,7 @@ public class DefaultWritableFoldersComputer implements WritableFoldersComputer {
         return ancestorSet;
     }
 
-    private List<String> clean(Collection<String> readableFolders) {
+    private List<String> clean(List<String> readableFolders) {
         return readableFolders
                 .stream()
                 .map(String::trim)
