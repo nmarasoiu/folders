@@ -13,14 +13,10 @@ public final class Tree {
 
     static Tree from(Stream<String> folders) {
         Tree root = new Tree("");
-        folders
-                .map(path -> path.substring(1))
-                .forEachOrdered(folder -> {
-                    Tree currentDir = root;
-                    for (String name : folder.split("/")) {
-                        currentDir = currentDir.children.computeIfAbsent(name, n -> new Tree(name));
-                    }
-                });
+        folders.forEachOrdered(folder ->
+                PathTokenizationUtils.split(folder).foldLeft(root, (currentDir, name) ->
+                        currentDir.children.computeIfAbsent(name, n -> new Tree(name))
+                ));
         return root;
     }
 

@@ -2,14 +2,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 public class DefaultWritableFoldersComputer implements WritableFoldersComputer {
-    private static final Pattern slashSplitter = Pattern.compile("/");
 
     @Override
     public Tree accessibleAndWritableFolders(Collection<String> readableFolders, Collection<String> writableFolders) {
@@ -25,11 +23,10 @@ public class DefaultWritableFoldersComputer implements WritableFoldersComputer {
     }
 
     private Stream<String> ancestors(String dir) {
-        StringBuilder ancestorBuilder = new StringBuilder(dir.length());
-        return slashSplitter
-                .splitAsStream(dir)
-                .skip(1) // the paths are absolute and the first elem will be "", before the first "/"
-                .map(name -> ancestorBuilder.append("/").append(name).toString());
+        return PathTokenizationUtils
+                .split(dir)
+                .scanLeft("", (parent, name) -> parent + "/" + name)//it should return Stream but..todo replace with Rx or Reactor
+                .stream();
     }
 
     private Stream<String> clean(Collection<String> folders) {
