@@ -1,5 +1,5 @@
-import java.util.List;
+import java.util.Collection;
 
 public interface WritableFoldersComputer {
-    Tree accessibleAndWritableFolders(List<String> readableFolders, List<String> writableFolders);
+    Tree accessibleAndWritableFolders(Collection<String> readableFolders, Collection<String> writableFolders);
 }
