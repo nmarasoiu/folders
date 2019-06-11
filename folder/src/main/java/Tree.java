@@ -14,9 +14,11 @@ public final class Tree {
     static Tree from(Stream<String> folders) {
         Tree root = new Tree("");
         folders.forEachOrdered(folder ->
-                PathUtil.components(folder).foldLeft(root, (currentDir, name) ->
-                        currentDir.children.computeIfAbsent(name, n -> new Tree(name))
-                ));
+                PathUtil
+                        .components(folder)
+                        .foldLeft(root, (currentDir, name) ->
+                                currentDir.children.computeIfAbsent(name, n -> new Tree(name))
+                        ));
         return root;
     }
 
@@ -25,7 +27,7 @@ public final class Tree {
                 .values()
                 .stream()
                 .flatMap(child -> {
-                    String childPath = "/".equals(parentPath) ? "/" + child.name : parentPath + "/" + child.name;
+                    String childPath = ("/".equals(parentPath) ? "/" : parentPath + "/") + child.name;
                     return child.children.isEmpty() ? Stream.of(childPath) : child.toPaths(childPath);
                 });
     }
