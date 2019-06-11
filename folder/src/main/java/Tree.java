@@ -31,25 +31,18 @@ public final class Tree {
                 .values()
                 .stream()
                 .flatMap(child -> {
-                    String childPath = ("/".equals(parentPath) ? "/" : parentPath + "/") + child.name;
+                    String childPath = ("/".equals(parentPath) ? "" : parentPath ) + "/" + child.name;
                     return child.children.isEmpty() ? Stream.of(childPath) : child.toPaths(childPath);
                 });
     }
 
-    private String getName() {
+    public String getName() {
         return name;
     }
 
-    private Stream<Tree> getChildren() {
+    public Stream<Tree> getChildren() {
         return new ArrayList<>(children.values()).stream();
     }
 
-    @Override
-    public String toString() {
-        return "Tree{" +
-                "name='" + getName() + '\'' +
-                ", children=" + getChildren() +
-                '}';
-    }
 }
 
