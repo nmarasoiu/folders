@@ -27,7 +27,8 @@ public class DefaultWritableFoldersComputer implements WritableFoldersComputer {
     private Stream<String> ancestors(String dir) {
         StringBuilder ancestorBuilder = new StringBuilder(dir.length());
         return slashSplitter
-                .splitAsStream(dir.substring(1))
+                .splitAsStream(dir)
+                .skip(1) // the paths are absolute and the first elem will be "", before the first "/"
                 .map(name -> ancestorBuilder.append("/").append(name).toString());
     }
 
