@@ -1,3 +1,5 @@
+import one.util.streamex.StreamEx;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -16,10 +18,11 @@ public class DefaultWritableFoldersComputer implements WritableFoldersComputer {
         return Tree.from(reachableAndWritableFolders(readableDirs, writableDirs));
     }
 
-    private Stream<String> reachableAndWritableFolders(Set<String> readableFolders, Collection<String> writableFolders) {
-        return writableFolders
-                .stream()
-                .filter(writableFolder -> ancestors(writableFolder).allMatch(readableFolders::contains));
+    private StreamEx<String> reachableAndWritableFolders(Set<String> readableFolders, Collection<String> writableFolders) {
+        return StreamEx.of(
+                writableFolders
+                        .stream()
+                        .filter(writableFolder -> ancestors(writableFolder).allMatch(readableFolders::contains)));
     }
 
     private Stream<String> ancestors(String dir) {

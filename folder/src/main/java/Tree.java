@@ -1,3 +1,5 @@
+import one.util.streamex.StreamEx;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,15 +13,17 @@ public final class Tree {
         this.name = name;
     }
 
-    static Tree from(Stream<String> folders) {
-        Tree root = new Tree("");
-        folders.forEachOrdered(folder ->
-                PathUtil
-                        .components(folder)
-                        .foldLeft(root, (currentDir, name) ->
-                                currentDir.children.computeIfAbsent(name, n -> new Tree(name))
-                        ));
-        return root;
+    static Tree from(StreamEx<String> folders) {
+        return folders.foldLeft(
+                new Tree(""),
+                (tree, folder) -> {
+                    PathUtil
+                            .components(folder)
+                            .foldLeft(tree, (currentDir, name) ->
+                                    currentDir.children.computeIfAbsent(name, n -> new Tree(name))
+                            );
+                    return tree;
+                });
     }
 
     Stream<String> toPaths(String parentPath) {
