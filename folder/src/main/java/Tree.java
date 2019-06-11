@@ -1,12 +1,14 @@
+import com.google.common.collect.Maps;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
 public final class Tree {
     private final String name;
-    private final Map<String, Tree> children = new HashMap<>();
+    private final Map<String, Tree> children = Maps.newHashMap();
 
     private Tree(String name) {
         this.name = name;
@@ -35,12 +37,12 @@ public final class Tree {
                 });
     }
 
-    public String getName() {
+    private String getName() {
         return name;
     }
 
-    public Collection<Tree> getChildren() {
-        return Collections.unmodifiableCollection(children.values());
+    private Stream<Tree> getChildren() {
+        return Collections.unmodifiableCollection(new ArrayList<>(children.values())).stream();
     }
 
     @Override
